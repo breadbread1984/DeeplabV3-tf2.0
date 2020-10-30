@@ -37,18 +37,22 @@ def AtrousSpatialPyramidPooling(input_shape):
   results = tf.keras.layers.ReLU()(results);
   return tf.keras.Model(inputs = inputs, outputs = results);
 
+def ResNet50(input_shape):
+
+  inputs = tf.keras.Input(input_shape);
+  resnet50 = tf.keras.applications.ResNet50(input_tensor = inputs, weights = 'imagenet', include_top = False);
+  return tf.keras.Model(inputs = inputs, outputs = (resnet50.get_layer('conv4_block6_2_relu').output, resnet50.get_layer('conv2_block3_2_relu').output), name = 'resnet50');
+
 def DeeplabV3Plus(input_shape, nclasses = None):
 
   assert type(nclasses) is int;
   inputs = tf.keras.Input(input_shape[-3:]);
-  resnet50 = tf.keras.applications.ResNet50(input_tensor = inputs, weights = 'imagenet', include_top = False);
+  low, high = ResNet50(inputs.shape[1:])(inputs);
   # a.shape = (batch, height // 4, width // 4, 256)
-  results = resnet50.get_layer('conv4_block6_2_relu').output;
-  results = AtrousSpatialPyramidPooling(results.shape[-3:])(results);
+  results = AtrousSpatialPyramidPooling(low.shape[-3:])(low);
   a = tf.keras.layers.UpSampling2D(size = (input_shape[-3] // 4 // results.shape[1], input_shape[-2] // 4 // results.shape[2]), interpolation = 'bilinear')(results);
   # b.shape = (batch, height // 4, width // 4, 48)
-  results = resnet50.get_layer('conv2_block3_2_relu').output;
-  results = tf.keras.layers.Conv2D(48, kernel_size = (1,1), padding = 'same', kernel_initializer = tf.keras.initializers.he_normal(), use_bias = False)(results);
+  results = tf.keras.layers.Conv2D(48, kernel_size = (1,1), padding = 'same', kernel_initializer = tf.keras.initializers.he_normal(), use_bias = False)(high);
   results = tf.keras.layers.BatchNormalization()(results);
   b = tf.keras.layers.ReLU()(results);
   # results.shape = (batch, height // 4, width // 4, 304)
@@ -72,4 +76,5 @@ if __name__ == "__main__":
   results = deeplabv3(tf.constant(np.random.normal(size = (8, 224, 224, 3)), dtype = tf.float32));
   deeplabv3.save('deeplabv3.h5');
   deeplabv3 = tf.keras.models.load_model('deeplabv3.h5', compile = False);
-
+  deeplabv3.get_layer('resnet50').save_weights('resnet50.h5');
+  deeplabv3.get_layer('resnet50').load_weights('resnet50.h5');

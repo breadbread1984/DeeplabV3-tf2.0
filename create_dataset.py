@@ -15,7 +15,7 @@ def create_dataset(image_dir, label_dir, trainset = True):
     img_info = anno.loadImgs([image])[0];
     img = cv2.imread(join(image_dir, img_info['file_name']));
     if img is None:
-      print('can\'t open image %s' % (join(image_dir, img_info['file_name']));
+      print('can\'t open image %s' % (join(image_dir, img_info['file_name'])));
       continue;
     masks = list();
     for category in anno.getCatIds():

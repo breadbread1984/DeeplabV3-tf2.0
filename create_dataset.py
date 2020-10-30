@@ -29,12 +29,12 @@ def create_dataset(image_dir, label_dir, trainset = True):
         instance_mask = anno.annToMask(ann);
         mask = np.maximum(mask, instance_mask);
       masks.append(mask);
-    masks = np.stack(masks, axis = -1); # masks.shape = (h, w, 90)
+    masks = np.stack(masks, axis = -1); # masks.shape = (h, w, 80)
     trainsample = tf.train.Example(features = tf.train.Features(
       feature = {
         'image': tf.train.Feature(bytes_list = tf.train.BytesList(value = [tf.io.encode_jpeg(img).numpy()])),
         'shape': tf.train.Feature(int64_list = tf.train.Int64List(value = list(img.shape))),
-        'label': tf.train.Feature(int64_list = tf.train.Int64List(value = tf.reshape(masks, (-1,))))
+        'label': tf.train.Feature(float_list = tf.train.FloatList(value = tf.reshape(masks, (-1,))))
       }
     ));
     writer.write(trainsample.SerializeToString());

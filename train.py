@@ -3,7 +3,7 @@
 from os.path import mkdir;
 import tensorflow as tf;
 from models import DeeplabV3Plus;
-from create_dataset import parse_function();
+from create_dataset import parse_function;
 
 batch_size = 1;
 

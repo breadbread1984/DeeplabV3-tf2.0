@@ -46,7 +46,7 @@ def ResNet50(input_shape):
 def DeeplabV3Plus(channel = 3, nclasses = None):
 
   assert type(nclasses) is int;
-  inputs = tf.keras.Input((None, None, 3));
+  inputs = tf.keras.Input((None, None, channel));
   low, high = ResNet50(inputs.shape[1:])(inputs);
   # a.shape = (batch, height // 4, width // 4, 256)
   results = AtrousSpatialPyramidPooling(low.shape[-1])(low);

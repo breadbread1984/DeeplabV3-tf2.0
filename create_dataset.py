@@ -6,6 +6,28 @@ import numpy as np;
 import cv2;
 import tensorflow as tf;
 
+def parse_function(serialized_example):
+
+  feature = tf.io.parse_single_example(
+    serialized_example,
+    features = {
+      'image': tf.io.FixedLenFeature((), dtype = tf.string, default_value = ''),
+      'shape': tf.io.FixedLenFeature((3,), dtype = tf.int64),
+      'label': tf.io.VarLenFeature(dtype = tf.float32)
+    }
+  );
+  shape = tf.cast(feature['shape'], dtype = tf.int32);
+  data = tf.io.decode_jpeg(feature['image']);
+  data = tf.reshape(data, shape);
+  data = tf.cast(data, dtype = tf.float32);
+  label = tf.sparse.to_dense(feature['label'], default_value = 0);
+  label = tf.reshape(label, (shape[0], shape[1], -1)); # label.shape = (h, w, 80)
+  tf.debugging.Assert(tf.math.equal(label.shape[-1], 80), label.shape);
+  foreground_mask = tf.math.reduce_max(label, axis = -1);
+  background_mask = tf.where(tf.math.equal(foreground_mask, 0), tf.ones_like(foreground_mask), tf.zeros_like(foreground_mask)); # background_mask.shape = (h, w)
+  label = tf.concat([tf.expand_dims(background_mask, axis = -1), label], axis = -1); # label.shape = (h, w, 81)
+  return data, label;
+
 def create_dataset(image_dir, label_dir, trainset = True):
 
   anno = COCO(join(label_dir, 'instances_train2017.json' if trainset else 'instances_val2017.json'));

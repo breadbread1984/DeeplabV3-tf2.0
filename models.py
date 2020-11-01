@@ -65,8 +65,8 @@ def DeeplabV3Plus(channel = 3, nclasses = None):
   results = tf.keras.layers.BatchNormalization()(results);
   results = tf.keras.layers.ReLU()(results);
   results = tf.keras.layers.Lambda(lambda x: tf.image.resize(x[0], (tf.shape(x[1])[1], tf.shape(x[1])[2]), method = tf.image.ResizeMethod.BILINEAR))([results, inputs]);
-  results = tf.keras.layers.Lambda(lambda x: x / tf.norm(x, axis = -1, keepdims = True))(results);
-  results = tf.keras.layers.Conv2D(nclasses, kernel_size = (1,1), padding = 'same', activation = tf.keras.activations.softmax, use_bias = False)(results);
+  results = tf.keras.layers.Lambda(lambda x: x / tf.norm(x, axis = -1, keepdims = True), name = 'prototype')(results);
+  results = tf.keras.layers.Conv2D(nclasses, kernel_size = (1,1), padding = 'same', activation = tf.keras.activations.softmax, use_bias = False, name = 'full_conv')(results);
   return tf.keras.Model(inputs = inputs, outputs = results);
 
 if __name__ == "__main__":
@@ -77,5 +77,13 @@ if __name__ == "__main__":
   results = deeplabv3(tf.constant(np.random.normal(size = (8, 224, 224, 3)), dtype = tf.float32));
   deeplabv3.save('deeplabv3.h5');
   deeplabv3 = tf.keras.models.load_model('deeplabv3.h5', compile = False);
+  # how to get the pretrained resnet50's weight
   deeplabv3.get_layer('resnet50').save_weights('resnet50.h5');
   deeplabv3.get_layer('resnet50').load_weights('resnet50.h5');
+  # how to get the prototype vector
+  inputs = tf.keras.Input((None, None, 3));
+  model = DeeplabV3Plus(3,81);
+  extractor = tf.keras.Model(inputs = model.input, outputs = model.get_layer('prototype').output);
+  results = extractor(tf.constant(np.random.normal(size = (8, 224, 224, 3)), dtype = tf.float32));
+  # how to get W of the last 1x1 convolution layer
+  deeplabv3.get_layer('full_conv').save_weights('full_conv.h5');

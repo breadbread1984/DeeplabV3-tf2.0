@@ -49,7 +49,7 @@ def create_dataset(image_dir, label_dir, trainset = True):
     handler.join();
   writer.close();
 
-def worker(image_ids, lock)
+def worker(image_ids, lock):
   for image in img_ids:
     img_info = anno.loadImgs([image])[0];
     img = cv2.imread(join(image_dir, img_info['file_name']));

@@ -43,13 +43,13 @@ def create_dataset(image_dir, label_dir, trainset = True):
   handlers = list();
   lock = Lock();
   for i in range(PROCESS_NUM):
-    handlers.append(Process(target = worker, args = (anno, writer, anno.getImgIds()[i * imgs_for_each:(i+1) * imgs_for_each] if i != PROCESS_NUM - 1 else anno.getImgIds()[i * imgs_for_each:], lock)));
+    handlers.append(Process(target = worker, args = (anno, writer, img_dir, anno.getImgIds()[i * imgs_for_each:(i+1) * imgs_for_each] if i != PROCESS_NUM - 1 else anno.getImgIds()[i * imgs_for_each:], lock)));
     handlers[-1].start();
   for handler in handlers:
     handler.join();
   writer.close();
 
-def worker(anno, writer, image_ids, lock):
+def worker(anno, writer, img_dir, image_ids, lock):
   for image in image_ids:
     img_info = anno.loadImgs([image])[0];
     img = cv2.imread(join(image_dir, img_info['file_name']));

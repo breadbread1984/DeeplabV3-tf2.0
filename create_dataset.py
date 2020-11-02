@@ -1,10 +1,14 @@
 #!/usr/bin/python3
 
 from os.path import join;
+from math import ceil;
+from multiprocessing import Process, Lock;
 from pycocotools.coco import COCO;
 import numpy as np;
 import cv2;
 import tensorflow as tf;
+
+PROCESS_NUM = 64;
 
 def parse_function(serialized_example):
 
@@ -35,7 +39,18 @@ def create_dataset(image_dir, label_dir, trainset = True):
   if writer is None:
     print('invalid output file!');
     exit(1);
-  for image in anno.getImgIds():
+  imgs_for_each = ceil(len(anno.getImgIds()) / PROCESS_NUM);
+  handlers = list();
+  lock = Lock();
+  for i in range(PROCESS_NUM):
+    handlers.append(Process(target = worker, args = (anno.getImgIds()[i * imgs_for_each:(i+1) * imgs_for_each] if i != PROCESS_NUM - 1 else anno.getImgIds()[i * imgs_for_each:], lock)));
+    handlers[-1].start();
+  for handler in handlers:
+    handler.join();
+  writer.close();
+
+def worker(image_ids, lock)
+  for image in img_ids:
     img_info = anno.loadImgs([image])[0];
     img = cv2.imread(join(image_dir, img_info['file_name']));
     if img is None:
@@ -59,8 +74,9 @@ def create_dataset(image_dir, label_dir, trainset = True):
         'label': tf.train.Feature(float_list = tf.train.FloatList(value = tf.reshape(masks, (-1,))))
       }
     ));
+    lock.acquire();
     writer.write(trainsample.SerializeToString());
-  writer.close();
+    lock.release();
 
 if __name__ == "__main__":
 

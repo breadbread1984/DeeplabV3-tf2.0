@@ -50,7 +50,7 @@ def create_dataset(image_dir, label_dir, trainset = True):
   writer.close();
 
 def worker(image_ids, lock):
-  for image in img_ids:
+  for image in image_ids:
     img_info = anno.loadImgs([image])[0];
     img = cv2.imread(join(image_dir, img_info['file_name']));
     if img is None:

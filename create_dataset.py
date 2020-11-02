@@ -8,7 +8,7 @@ import numpy as np;
 import cv2;
 import tensorflow as tf;
 
-PROCESS_NUM = 64;
+PROCESS_NUM = 80;
 
 def parse_function(serialized_example):
 

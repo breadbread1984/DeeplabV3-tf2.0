@@ -32,7 +32,7 @@ def main():
       images, labels = inputs;
       with tf.GradientTape() as tape:
         preds = deeplabv3plus(images);
-        loss = tf.keras.losses.CategoricalCrossentropy()(labels, preds);
+        loss = tf.keras.losses.SparseCategoricalCrossentropy()(labels, preds);
       gradients = tape.gradient(loss, deeplabv3plus.trainable_variables);
       optimizer.apply_gradients(zip(gradients, deeplabv3plus.trainable_variables));
       train_accuracy.update_state(labels, preds);

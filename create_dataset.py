@@ -25,11 +25,7 @@ def parse_function(serialized_example):
   data = tf.reshape(data, shape);
   data = tf.cast(data, dtype = tf.float32);
   label = tf.sparse.to_dense(feature['label'], default_value = 0);
-  label = tf.reshape(label, (shape[0], shape[1], -1)); # label.shape = (h, w, 80)
-  tf.debugging.Assert(tf.math.equal(label.shape[-1], 80), label.shape);
-  foreground_mask = tf.math.reduce_max(label, axis = -1);
-  background_mask = tf.where(tf.math.equal(foreground_mask, 0), tf.ones_like(foreground_mask), tf.zeros_like(foreground_mask)); # background_mask.shape = (h, w)
-  label = tf.concat([tf.expand_dims(background_mask, axis = -1), label], axis = -1); # label.shape = (h, w, 81)
+  label = tf.reshape(label, (shape[0], shape[1])); # label.shape = (h, w)
   return data, label;
 
 def create_dataset(image_dir, label_dir, trainset = True):
@@ -56,22 +52,19 @@ def worker(anno, writer, image_dir, image_ids, lock):
     if img is None:
       print('can\'t open image %s' % (join(image_dir, img_info['file_name'])));
       continue;
-    masks = list();
+    mask = np.zeros((img_info['height'], img_info['width']));
     for category in anno.getCatIds():
       annIds = anno.getAnnIds(imgIds = image, catIds = category);
-      mask = np.zeros((img_info['height'], img_info['width']));
       anns = anno.loadAnns(annIds);
       for ann in anns:
         # for every instance of category in current image
         instance_mask = anno.annToMask(ann);
-        mask = np.maximum(mask, instance_mask);
-      masks.append(mask);
-    masks = np.stack(masks, axis = -1); # masks.shape = (h, w, 80)
+        mask = np.maximum(mask, instance_mask * category);
     trainsample = tf.train.Example(features = tf.train.Features(
       feature = {
         'image': tf.train.Feature(bytes_list = tf.train.BytesList(value = [tf.io.encode_jpeg(img).numpy()])),
         'shape': tf.train.Feature(int64_list = tf.train.Int64List(value = list(img.shape))),
-        'label': tf.train.Feature(float_list = tf.train.FloatList(value = tf.reshape(masks, (-1,))))
+        'label': tf.train.Feature(float_list = tf.train.FloatList(value = tf.reshape(mask, (-1,))))
       }
     ));
     lock.acquire();

@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 from os import mkdir;
+from os.path import join;
 import tensorflow as tf;
 from models import DeeplabV3Plus;
 from create_dataset import parse_function;

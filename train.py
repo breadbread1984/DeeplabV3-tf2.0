@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from os.path import mkdir;
+from os import mkdir;
 import tensorflow as tf;
 from models import DeeplabV3Plus;
 from create_dataset import parse_function;

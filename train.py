@@ -10,7 +10,7 @@ batch_size = 1;
 def main():
 
   # distributed strategy
-  strategy = tf.distribute.MirroredStragtegy();
+  strategy = tf.distribute.MirroredStrategy();
   # load dataset 
   trainset = tf.data.TFRecordDataset(join('trainset.tfrecord')).repeat(-1).map(parse_function).shuffle(batch_size).batch(batch_size).prefetch(tf.data.experimental.AUTOTUNE);
   testset = tf.data.TFRecordDataset(join('testset.tfrecord')).repeat(-1).map(parse_function).shuffle(batch_size).batch(batch_size).prefetch(tf.data.experimental.AUTOTUNE);

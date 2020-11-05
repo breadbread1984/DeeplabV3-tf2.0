@@ -1,8 +1,10 @@
 #!/usr/bin/python3
 
+from os import mkdir;
 from os.path import join;
+from shutil import rmtree;
 from math import ceil;
-from multiprocessing import Process, Lock;
+from multiprocessing import Process;
 from pycocotools.coco import COCO;
 import numpy as np;
 import cv2;
@@ -31,21 +33,25 @@ def parse_function(serialized_example):
 def create_dataset(image_dir, label_dir, trainset = True):
 
   anno = COCO(join(label_dir, 'instances_train2017.json' if trainset else 'instances_val2017.json'));
-  writer = tf.io.TFRecordWriter('trainset.tfrecord' if trainset else 'testset.tfrecord');
-  if writer is None:
-    print('invalid output file!');
-    exit(1);
+  mkdir('tmp');
   imgs_for_each = ceil(len(anno.getImgIds()) / PROCESS_NUM);
   handlers = list();
-  lock = Lock();
+  filenames = list();
   for i in range(PROCESS_NUM):
-    handlers.append(Process(target = worker, args = (anno, writer, image_dir, anno.getImgIds()[i * imgs_for_each:(i+1) * imgs_for_each] if i != PROCESS_NUM - 1 else anno.getImgIds()[i * imgs_for_each:], lock)));
+    filename = ('trainset_part_%d' if trainset else 'testset_part_%d') % i;
+    filenames.append(join('tmp', filename));
+    handlers.append(Process(target = worker, args = (join('tmp', filename), anno, image_dir, anno.getImgIds()[i * imgs_for_each:(i+1) * imgs_for_each] if i != PROCESS_NUM - 1 else anno.getImgIds()[i * imgs_for_each:])));
     handlers[-1].start();
   for handler in handlers:
     handler.join();
+  writer = tf.io.TFRecordWriter('trainset.tfrecord' if trainset else 'testset.tfrecord');
+  data = tf.data.TFRecordDataset(filenames);
+  writer.write(data);
   writer.close();
+  rmtree('tmp');
 
-def worker(anno, writer, image_dir, image_ids, lock):
+def worker(filename, anno, image_dir, image_ids):
+  writer = tf.io.TFRecordWriter(filename);
   for image in image_ids:
     img_info = anno.loadImgs([image])[0];
     img = cv2.imread(join(image_dir, img_info['file_name']));
@@ -67,9 +73,8 @@ def worker(anno, writer, image_dir, image_ids, lock):
         'label': tf.train.Feature(float_list = tf.train.FloatList(value = tf.reshape(mask, (-1,))))
       }
     ));
-    lock.acquire();
     writer.write(trainsample.SerializeToString());
-    lock.release();
+  writer.close();
 
 if __name__ == "__main__":
 
@@ -78,5 +83,5 @@ if __name__ == "__main__":
   if len(argv) != 4:
     print('Usage: %s <train image dir> <test image dir> <anno dir>' % (argv[0]));
     exit(1);
-  create_dataset(argv[1], argv[3], True);
   create_dataset(argv[2], argv[3], False);
+  create_dataset(argv[1], argv[3], True);

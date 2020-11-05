@@ -45,7 +45,7 @@ def main():
 
       images, labels = inputs;
       preds = deeplabv3plus(images);
-      loss = tf.keras.losses.CategoricalCrossentropy()(labels, preds);
+      loss = tf.keras.losses.SparseCategoricalCrossentropy()(labels, preds);
       test_loss.update_state(loss);
       test_accuracy.update_state(labels, preds);
     

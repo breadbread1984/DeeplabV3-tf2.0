@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from os import mkdir;
-from os.path import join;
+from os.path import join, exists;
 from shutil import rmtree;
 from math import ceil;
 from multiprocessing import Process;

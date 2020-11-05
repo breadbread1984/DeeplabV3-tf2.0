@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from os import mkdir;
+from os import mkdir, listdir;
 from os.path import join, exists;
 import tensorflow as tf;
 from models import DeeplabV3Plus;
@@ -13,8 +13,10 @@ def main():
   # distributed strategy
   strategy = tf.distribute.MirroredStrategy();
   # load dataset 
-  trainset = tf.data.TFRecordDataset(join('trainset.tfrecord')).repeat(-1).map(parse_function).shuffle(batch_size).batch(batch_size).prefetch(tf.data.experimental.AUTOTUNE);
-  testset = tf.data.TFRecordDataset(join('testset.tfrecord')).repeat(-1).map(parse_function).shuffle(batch_size).batch(batch_size).prefetch(tf.data.experimental.AUTOTUNE);
+  trainset_filenames = [join('trainset', filename) for filename in listdir('trainset')];
+  testset_filenames = [join('testset', filename) for filename in listdir('testset')];
+  trainset = tf.data.TFRecordDataset(trainset_filenames).repeat(-1).map(parse_function).shuffle(batch_size).batch(batch_size).prefetch(tf.data.experimental.AUTOTUNE);
+  testset = tf.data.TFRecordDataset(testset_filenames).repeat(-1).map(parse_function).shuffle(batch_size).batch(batch_size).prefetch(tf.data.experimental.AUTOTUNE);
   dist_trainset = strategy.experimental_distribute_dataset(trainset);
   dist_testset = strategy.experimental_distribute_dataset(testset);
   with strategy.scope():

@@ -67,16 +67,12 @@ def main():
     # reduce losses from all replica
     strategy.reduce(tf.distribute.ReduceOp.MEAN, per_replica_losses, axis = None);
     if tf.equal(optimizer.iterations % 100, 0):
+      # save checkpoint
+      checkpoint.save(join('checkpoints', 'ckpt'));
       # print train status
       with log.as_default():
         tf.summary.scalar('train loss', train_loss.result(), step = optimizer.iterations);
         tf.summary.scalar('train accuracy', train_accuracy.result(), step = optimizer.iterations);
-      print('Step #%d Loss: %.6f' % (optimizer.iterations, train_loss.result()));
-      if train_loss.result() < 0.01: break;
-      train_loss.reset_states();
-      train_accuracy.reset_states();
-      # save checkpoint
-      checkpoint.save(join('checkpoints', 'ckpt'));
       # print test status
       for i in range(10):
         samples = next(dist_testset_iter);
@@ -84,8 +80,14 @@ def main():
       with log.as_default():
         tf.summary.scalar('test loss', test_loss.result(), step = optimizer.iterations);
         tf.summary.scalar('test accuracy', test_accuracy.result(), step = optimizer.iterations);
+      print('Step #%d Train Loss: %.6f Train Accuracy: %.6f Test Loss: %.6f Test Accuracy: %.6f' % \
+          (optimizer.iterations, train_loss.result(), train_accuracy.result(), test_loss.result(), test_accuracy.result()));
+      train_loss.reset_states();
+      train_accuracy.reset_states();
       test_loss.reset_states();
       test_accuracy.reset_states();
+      # break condition
+      if train_loss.result() < 0.01: break;
   deeplabv3plus.save('deeplabv3plus.h5');
 
 if __name__ == "__main__":

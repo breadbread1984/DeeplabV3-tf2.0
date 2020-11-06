@@ -48,13 +48,13 @@ def DeeplabV3Plus(channel = 3, nclasses = None):
   assert type(nclasses) is int;
   inputs = tf.keras.Input((None, None, channel));
   low, high = ResNet50(inputs.shape[1:])(inputs);
-  # a.shape = (batch, height // 4, width // 4, 256)
-  results = AtrousSpatialPyramidPooling(low.shape[-1])(low);
-  a = tf.keras.layers.Lambda(lambda x: tf.image.resize(x[0], (tf.shape(x[1])[1] // 4, tf.shape(x[1])[2] // 4), method = tf.image.ResizeMethod.BILINEAR))([results, inputs]);
   # b.shape = (batch, height // 4, width // 4, 48)
   results = tf.keras.layers.Conv2D(48, kernel_size = (1,1), padding = 'same', kernel_initializer = tf.keras.initializers.he_normal(), use_bias = False)(high);
   results = tf.keras.layers.BatchNormalization()(results);
   b = tf.keras.layers.ReLU()(results);
+  # a.shape = (batch, height // 4, width // 4, 256)
+  results = AtrousSpatialPyramidPooling(low.shape[-1])(low);
+  a = tf.keras.layers.Lambda(lambda x: tf.image.resize(x[0], (tf.shape(x[1])[1], tf.shape(x[1])[2]), method = tf.image.ResizeMethod.BILINEAR))([results, b]);
   # results.shape = (batch, height // 4, width // 4, 304)
   results = tf.keras.layers.Concatenate(axis = -1)([a, b]);
   # results.shape = (batch, height // 4, width // 4, 256)

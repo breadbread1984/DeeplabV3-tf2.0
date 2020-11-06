@@ -17,63 +17,11 @@ def main():
   testset_filenames = [join('testset', filename) for filename in listdir('testset')];
   trainset = tf.data.TFRecordDataset(trainset_filenames).repeat(-1).map(parse_function).shuffle(batch_size).batch(batch_size).prefetch(tf.data.experimental.AUTOTUNE);
   testset = tf.data.TFRecordDataset(testset_filenames).repeat(-1).map(parse_function).shuffle(batch_size).batch(batch_size).prefetch(tf.data.experimental.AUTOTUNE);
-  dist_trainset = strategy.experimental_distribute_dataset(trainset);
-  dist_testset = strategy.experimental_distribute_dataset(testset);
-  dist_trainset_iter = iter(dist_trainset);
-  dist_testset_iter = iter(dist_testset);
   with strategy.scope():
     deeplabv3plus = DeeplabV3Plus(3, 80 + 1);
-    optimizer = tf.keras.optimizers.Adam(tf.keras.optimizers.schedules.ExponentialDecay(1e-3, decay_steps = 6000, decay_rate = 0.5));
-  train_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name = "train_accuracy");
-  test_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name = "test_accuracy");
-  test_loss = tf.keras.metrics.Mean(name = "test_loss");
-  # checkpoint
-  if False == exists('checkpoints'): mkdir('checkpoints');
-  checkpoint = tf.train.Checkpoint(model = deeplabv3plus, optimizer = optimizer);
-  checkpoint.restore(tf.train.latest_checkpoint('checkpoints'));
-
-  def train_step(inputs):
-
-    images, labels = inputs;
-    with tf.GradientTape() as tape:
-      preds = deeplabv3plus(images);
-      per_example_loss = tf.keras.losses.SparseCategoricalCrossentropy(reduction = tf.keras.losses.Reduction.NONE)(labels, preds);
-      loss = tf.nn.compute_average_loss(per_example_loss, global_batch_size = batch_size);
-    gradients = tape.gradient(loss, deeplabv3plus.trainable_variables);
-    optimizer.apply_gradients(zip(gradients, deeplabv3plus.trainable_variables));
-    train_accuracy.update_state(labels, preds);
-    return loss;
-    
-  def test_step(inputs):
-
-    images, labels = inputs;
-    preds = deeplabv3plus(images);
-    loss = tf.keras.losses.SparseCategoricalCrossentropy(reduction = tf.keras.losses.Reduction.NONE)(labels, preds);
-    test_loss.update_state(loss);
-    test_accuracy.update_state(labels, preds);
-    
-  @tf.function
-  def distributed_train_step(dataset_inputs):
-
-    per_replica_losses = strategy.experimental_run_v2(train_step, args = (dataset_inputs,));
-    return strategy.reduce(tf.distribute.ReduceOp.SUM, per_replica_losses, axis = None);
-    
-  @tf.function
-  def distributed_test_step(dataset_inputs):
-
-    return strategy.experimental_run_v2(test_step, args = (dataset_inputs,));
-    
-  while True:
-
-    for samples in dist_trainset:
-      distributed_train_step(samples);
-    for samples in dist_testset:
-      distributed_test_step(samples);
-    checkpoint.save(join('checkpoints', 'ckpt'));
-    print("Step #%d Train Accuracy: %.6f Test Accuracy: %.6f Test Loss: %.6f" % (optimizer.iterations, train_accuracy.result(), test_accuracy.result(), test_loss.result()));
-    train_accuracy.reset_states();
-    test_accuracy.reset_states();
-    test_loss.reset_states();
+  deeplabv3plus.compile(optimizer = 'adam', loss = 'sparse_categorical_crossentropy', metrics = ['sparse_categorical_accuracy']);
+  deeplabv3plus.fit(trainset, epochs = 100, validation_data = testset);
+  deeplabv3plus.save('deeplabv3plus.h5');
 
 if __name__ == "__main__":
 

@@ -15,7 +15,7 @@ def main():
   # variables for replica
   with strategy.scope():
     deeplabv3plus = DeeplabV3Plus(3, 80 + 1);
-    loss_object = tf.keras.losses.SparseCategoricalCategoricalCrossentropy(reduction = tf.keras.losses.Reduction.NONE);
+    loss_object = tf.keras.losses.SparseCategoricalCrossentropy(reduction = tf.keras.losses.Reduction.NONE);
     optimizer = tf.keras.optimizers.Adam(tf.keras.optimizers.schedules.ExponentialDecay(1e-3, decay_steps = 60000, decay_rate = 0.5));
     checkpoint = tf.train.Checkpoint(model = deeplabv3plus, optimizer = optimizer);
     train_loss = tf.keras.metrics.Mean(name = 'train loss', dtype = tf.float32);
@@ -69,15 +69,14 @@ def main():
     if tf.equal(optimizer.iterations % 100, 0):
       # save checkpoint
       checkpoint.save(join('checkpoints', 'ckpt'));
-      # print train status
-      with log.as_default():
-        tf.summary.scalar('train loss', train_loss.result(), step = optimizer.iterations);
-        tf.summary.scalar('train accuracy', train_accuracy.result(), step = optimizer.iterations);
       # print test status
       for i in range(10):
         samples = next(dist_testset_iter);
         strategy.run(test_step, args = (samples,));
+      # write log
       with log.as_default():
+        tf.summary.scalar('train loss', train_loss.result(), step = optimizer.iterations);
+        tf.summary.scalar('train accuracy', train_accuracy.result(), step = optimizer.iterations);
         tf.summary.scalar('test loss', test_loss.result(), step = optimizer.iterations);
         tf.summary.scalar('test accuracy', test_accuracy.result(), step = optimizer.iterations);
       print('Step #%d Train Loss: %.6f Train Accuracy: %.6f Test Loss: %.6f Test Accuracy: %.6f' % \

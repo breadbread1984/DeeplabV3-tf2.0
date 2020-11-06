@@ -16,6 +16,9 @@ def main():
   with strategy.scope():
     deeplabv3plus = DeeplabV3Plus(3, 80 + 1);
     loss_object = tf.keras.losses.SparseCategoricalCrossentropy(reduction = tf.keras.losses.Reduction.NONE);
+    def compute_loss(labels, predictions):
+      per_example_loss = loss_object(labels, predictions);
+      return tf.nn.compute_average_loss(per_example_loss, global_batch_size = batch_sizee * strategy.num_replicas_in_sync);
     optimizer = tf.keras.optimizers.Adam(tf.keras.optimizers.schedules.ExponentialDecay(1e-3, decay_steps = 60000, decay_rate = 0.5));
     checkpoint = tf.train.Checkpoint(model = deeplabv3plus, optimizer = optimizer);
     train_loss = tf.keras.metrics.Mean(name = 'train loss', dtype = tf.float32);
@@ -42,10 +45,10 @@ def main():
     data, labels = inputs;
     with tf.GradientTape() as tape:
       predictions = deeplabv3plus(data, training = True);
-      loss = loss_object(labels, predictions);
+      loss = compute_loss(labels, predictions);
       #loss = tf.nn.compute_average_loss(per_example_loss, global_batch_size = batch_size);
     gradients = tape.gradient(loss, deeplabv3plus.trainable_variables);
-    if tf.math.reduce_any([tf.math.reduce_any(tf.math.logical_or(tf.math.is_nan(grad), tf.math.is_inf(grad))) for grad in gradients if grad is not None]) == True:
+    if tf.math.reduce_any([tf.math.reduce_any(tf.math.logical_or(tf.math.is_nan(grad), tf.math.is_inf(grad))) for grad in gradients]) == True:
       print('detected nan in grads, skip current iterations');
       return 0;
     optimizer.apply_gradients(zip(gradients, deeplabv3plus.trainable_variables));

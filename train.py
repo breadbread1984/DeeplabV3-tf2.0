@@ -24,13 +24,13 @@ def main():
   with strategy.scope():
     deeplabv3plus = DeeplabV3Plus(3, 80 + 1);
     optimizer = tf.keras.optimizers.Adam(tf.keras.optimizers.schedules.ExponentialDecay(1e-3, decay_steps = 6000, decay_rate = 0.5));
-    train_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name = "train_accuracy");
-    test_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name = "test_accuracy");
-    test_loss = tf.keras.metrics.Mean(name = "test_loss");
-    # checkpoint
-    if False == exists('checkpoints'): mkdir('checkpoints');
-    checkpoint = tf.train.Checkpoint(model = deeplabv3plus, optimizer = optimizer);
-    checkpoint.restore(tf.train.latest_checkpoint('checkpoints'));
+  train_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name = "train_accuracy");
+  test_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name = "test_accuracy");
+  test_loss = tf.keras.metrics.Mean(name = "test_loss");
+  # checkpoint
+  if False == exists('checkpoints'): mkdir('checkpoints');
+  checkpoint = tf.train.Checkpoint(model = deeplabv3plus, optimizer = optimizer);
+  checkpoint.restore(tf.train.latest_checkpoint('checkpoints'));
 
   def train_step(inputs):
 

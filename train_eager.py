@@ -61,7 +61,7 @@ def main():
 
   # train
   while True:
-    samples = next(dist_trainset_iter):
+    samples = next(dist_trainset_iter);
     # every GPU runs its replica
     per_replica_losses = strategy.run(train_step, args = (samples,));
     # reduce losses from all replica

@@ -22,8 +22,8 @@ def main():
   with strategy.scope():
     deeplabv3plus = DeeplabV3Plus(3, 80 + 1);
     optimizer = tf.keras.optimizers.Adam(tf.keras.optimizers.schedules.ExponentialDecay(1e-3, decay_steps = 6000, decay_rate = 0.5));
-    train_accuracy = tf.keras.metrics.CategoricalAccuracy(name = "train_accuracy");
-    test_accuracy = tf.keras.metrics.CategoricalAccuracy(name = "test_accuracy");
+    train_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name = "train_accuracy");
+    test_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name = "test_accuracy");
     test_loss = tf.keras.metrics.Mean(name = "test_loss");
     # checkpoint
     if False == exists('checkpoints'): mkdir('checkpoints');

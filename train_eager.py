@@ -42,8 +42,8 @@ def main():
     data, labels = inputs;
     with tf.GradientTape() as tape:
       predictions = deeplabv3plus(data, training = True);
-      per_example_loss = loss_object(labels, predictions);
-      loss = tf.nn.compute_average_loss(per_example_loss, global_batch_size = batch_size);
+      loss = loss_object(labels, predictions);
+      #loss = tf.nn.compute_average_loss(per_example_loss, global_batch_size = batch_size);
     gradients = tape.gradient(loss, deeplabv3plus.trainable_variables);
     if tf.math.reduce_any([tf.math.reduce_any(tf.math.logical_or(tf.math.is_nan(grad), tf.math.is_inf(grad))) for grad in gradients if grad is not None]) == True:
       print('detected nan in grads, skip current iterations');

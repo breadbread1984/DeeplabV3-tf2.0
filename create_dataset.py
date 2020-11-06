@@ -26,6 +26,7 @@ def parse_function(serialized_example):
   data = tf.io.decode_jpeg(feature['image']);
   data = tf.reshape(data, shape);
   data = tf.cast(data, dtype = tf.float32);
+  data = data / (255/2) - 1; # convert to [-1, 1]
   label = tf.sparse.to_dense(feature['label'], default_value = 0);
   label = tf.reshape(label, (shape[0], shape[1])); # label.shape = (h, w)
   return data, label;

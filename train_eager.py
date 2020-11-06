@@ -13,7 +13,7 @@ def main():
   # distributed strategy
   strategy = tf.distribute.MirroredStrategy();
   # variables for replica
-  with mirrored_strategy.scope():
+  with strategy.scope():
     deeplabv3plus = DeeplabV3Plus(3, 80 + 1);
     loss_object = tf.keras.losses.SparseCategoricalCategoricalCrossentropy(reduction = tf.keras.losses.Reduction.NONE);
     optimizer = tf.keras.optimizers.Adam(tf.keras.optimizers.schedules.ExponentialDecay(1e-3, decay_steps = 60000, decay_rate = 0.5));

@@ -19,9 +19,9 @@ def main():
     optimizer = tf.keras.optimizers.Adam(tf.keras.optimizers.schedules.ExponentialDecay(1e-3, decay_steps = 60000, decay_rate = 0.5));
     checkpoint = tf.train.Checkpoint(model = deeplabv3plus, optimizer = optimizer);
     train_loss = tf.keras.metrics.Mean(name = 'train loss', dtype = tf.float32);
-    train_accuracy = tf.keras.metrics.SparseCategoricalCategoricalAccuracy(name = 'train accuracy');
+    train_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name = 'train accuracy');
     test_loss = tf.keras.metrics.Mean(name = 'test loss', dtype = tf.float32);
-    test_accuracy = tf.keras.metrics.SparseCategoricalCategoricalAccuracy(name = 'test accuracy');
+    test_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name = 'test accuracy');
   # load dataset 
   trainset_filenames = [join('trainset', filename) for filename in listdir('trainset')];
   testset_filenames = [join('testset', filename) for filename in listdir('testset')];

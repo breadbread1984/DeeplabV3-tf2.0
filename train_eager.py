@@ -36,6 +36,7 @@ def main():
   checkpoint.restore(tf.train.latest_checkpoint('checkpoints'));
   # log
   log = tf.summary.create_file_writer('checkpoints');
+  
   # train step (per GPU)
   def train_step(inputs):
     data, labels = inputs;
@@ -43,7 +44,7 @@ def main():
       predictions = deeplabv3plus(data, training = True);
       per_example_loss = loss_object(labels, predictions);
       loss = tf.nn.compute_average_loss(per_example_loss, global_batch_size = batch_size);
-    gradients = tape.gradients(loss, deeplabv3plus.trainable_variables);
+    gradients = tape.gradient(loss, deeplabv3plus.trainable_variables);
     if tf.math.reduce_any([tf.math.reduce_any(tf.math.logical_or(tf.math.is_nan(grad), tf.math.is_inf(grad))) for grad in gradients]) == True:
       print('detected nan in grads, skip current iterations');
       return 0;

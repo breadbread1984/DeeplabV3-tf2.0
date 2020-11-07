@@ -32,8 +32,18 @@ def main():
   while True:
     data, labels = next(trainset_iter);
     with tf.GradientTape() as tape:
+      if tf.math.reduce_any(tf.math.logical_or(tf.math.is_nan(data), tf.math.is_inf(data))) == True:
+        print('detected nan in data, skip current iterations');
+        continue;
       preds = deeplabv3plus(data, training = True);
+      if tf.math.reduce_any(tf.math.logical_or(tf.math.is_nan(preds), tf.math.is_inf(preds))) == True:
+        print('detected nan in preds, skip current iterations');
+        pdb.set_trace();
+        continue;
       loss = tf.keras.losses.SparseCategoricalCrossentropy()(labels, preds);
+      if tf.math.reduce_any(tf.math.logical_or(tf.math.is_nan(loss), tf.math.is_inf(loss))) == True:
+        print('detected nan in loss, skip current iterations');
+        continue;
     grads = tape.gradient(loss, deeplabv3plus.trainable_variables);
     if tf.math.reduce_any([tf.math.reduce_any(tf.math.logical_or(tf.math.is_nan(grad), tf.math.is_inf(grad))) for grad in grads]) == True:
       print('detected nan in grads, skip current iterations');

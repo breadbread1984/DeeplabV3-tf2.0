@@ -13,10 +13,15 @@ upon executing the script successfully, there will directory trainset and testse
 
 ## train with dataset
 
-train with executing command
+train with multiple GPU with executing command
 
 ```python
-python3 train.py
+python3 train_eager_distributed.py
 ```
 
+train with single GPU with executing command
+
+```python
+python3 train_eager.py
+```
 

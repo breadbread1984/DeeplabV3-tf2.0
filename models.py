@@ -65,7 +65,8 @@ def DeeplabV3Plus(channel = 3, nclasses = None):
   results = tf.keras.layers.BatchNormalization()(results);
   results = tf.keras.layers.ReLU()(results);
   results = tf.keras.layers.Lambda(lambda x: tf.image.resize(x[0], (tf.shape(x[1])[1], tf.shape(x[1])[2]), method = tf.image.ResizeMethod.BILINEAR))([results, inputs]);
-  results = tf.keras.layers.Lambda(lambda x: x / tf.maximum(tf.norm(x, axis = -1, keepdims = True), 1e-4), name = 'prototype')(results);
+  #results = tf.keras.layers.Lambda(lambda x: x / tf.maximum(tf.norm(x, axis = -1, keepdims = True), 1e-4), name = 'prototype')(results);
+  results = tf.keras.layers.Lambda(lambda x: tf.clip_by_norm(x, 1))(results);
   results = tf.keras.layers.Conv2D(nclasses, kernel_size = (1,1), padding = 'same', activation = tf.keras.activations.softmax, use_bias = False, name = 'full_conv')(results);
   return tf.keras.Model(inputs = inputs, outputs = results);
 

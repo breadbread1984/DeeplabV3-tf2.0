@@ -51,9 +51,10 @@ def main():
     optimizer.apply_gradients(zip(grads, deeplabv3plus.trainable_variables));
     train_loss.update_state(loss);
     train_accuracy.update_state(labels, preds);
-    if tf.equal(optimizer.iterations % 1000, 0):
+    if tf.equal(optimizer.iterations % 10000, 0):
       # save checkpoint
       checkpoint.save(join('checkpoints', 'ckpt'));
+    if tf.equal(optimizer.iterations % 1000, 0):
       # evaluate
       for i in range(10):
         data, labels = next(testset_iter);

@@ -58,6 +58,9 @@ def main():
       # evaluate
       for i in range(10):
         data, labels = next(testset_iter);
+        if tf.math.reduce_any(tf.math.logical_or(tf.math.is_nan(data), tf.math.is_inf(data))) == True:
+          print('detected nan in data, skip current iterations');
+          continue;
         preds = deeplabv3plus(data, training = False);
         loss = tf.keras.losses.SparseCategoricalCrossentropy()(labels, preds);
         test_loss.update_state(loss);

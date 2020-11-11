@@ -28,6 +28,13 @@ def parse_function(serialized_example):
   data = tf.cast(data, dtype = tf.float32);
   label = tf.sparse.to_dense(feature['label'], default_value = 0);
   label = tf.reshape(label, (shape[0], shape[1])); # label.shape = (h, w)
+  comp = tf.concat([data, tf.expand_dims(label, axis = -1)], axis = -1); # comp.shape = (h,w,3+1)
+  scale = tf.random.uniform(low = 0.5, high = 1.75, shape = ());
+  shape = tf.cast([shape[0] * scale, shape[1] * scale], dtype = tf.int32);
+  comp = tf.image.resize(tf.expand_dims(comp, axis = 0), shape);
+  data = comp[...,:-1]; # data.shape = (h, w, 3)
+  label = comp[...,-1]; # label.shape = (h, w)
+  label = tf.clip_by_value(tf.math.rint(label), 0, 80); # label.shape = (h, w)
   return data, label;
 
 def create_dataset(image_dir, label_dir, trainset = True):

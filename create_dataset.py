@@ -25,13 +25,14 @@ def parse_function(serialized_example):
   shape = tf.cast(feature['shape'], dtype = tf.int32);
   data = tf.io.decode_jpeg(feature['image']);
   data = tf.reshape(data, shape);
-  data = tf.cast(data, dtype = tf.float32);
+  data = tf.cast(data, dtype = tf.float32); # data.shape = (h, w, 3)
   label = tf.sparse.to_dense(feature['label'], default_value = 0);
   label = tf.reshape(label, (shape[0], shape[1])); # label.shape = (h, w)
-  comp = tf.concat([data, tf.expand_dims(label, axis = -1)], axis = -1); # comp.shape = (h,w,3+1)
   scale = tf.random.uniform(low = 0.5, high = 1.75, shape = ());
   shape = tf.cast([shape[0] * scale, shape[1] * scale], dtype = tf.int32);
-  comp = tf.squeeze(tf.image.resize(tf.expand_dims(comp, axis = 0), shape), axis = 0); # comp.shape = (h, w, 3 + 1)
+  data = tf.image.resize(tf.expand_dims(data, axis = 0), shape, method = tf.image.ResizeMethod.BILINEAR); # data.shape = (1, s*h, s*w, 3)
+  label = tf.image.resize(tf.reshape(label, (1, label.shape[0], label.shape[1], 1)), shape, method = tf.image.ResizeMethod.NEAREST_NEIGHBOR); # label.shape = (1, s*h, s*w, 1)
+  comp = tf.squeeze(tf.concat([data, label], axis = -1), axis = 0); # comp.shape = (s*h, s*w, 3+1)
   comp = tf.cond(tf.math.greater(tf.random.uniform(shape = ()), 0.5), lambda: comp, lambda: tf.squeeze(tf.image.flip_left_right(tf.expand_dims(comp, axis = 0)), axis = 0)); # comp.shape = (h, w, 3 + 1)
   data = comp[...,:-1]; # data.shape = (h, w, 3)
   label = comp[...,-1]; # label.shape = (h, w)

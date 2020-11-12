@@ -28,7 +28,7 @@ def parse_function(serialized_example):
   data = tf.cast(data, dtype = tf.float32); # data.shape = (h, w, 3)
   label = tf.sparse.to_dense(feature['label'], default_value = 0);
   label = tf.reshape(label, (shape[0], shape[1])); # label.shape = (h, w)
-  scale = tf.random.uniform(low = 0.5, high = 1.75, shape = ());
+  scale = tf.random.uniform(minval = 0.5, maxval = 1.75, shape = (), dtype = tf.float32);
   shape = tf.cast([shape[0] * scale, shape[1] * scale], dtype = tf.int32);
   data = tf.image.resize(tf.expand_dims(data, axis = 0), shape, method = tf.image.ResizeMethod.BILINEAR); # data.shape = (1, s*h, s*w, 3)
   label = tf.image.resize(tf.reshape(label, (1, label.shape[0], label.shape[1], 1)), shape, method = tf.image.ResizeMethod.NEAREST_NEIGHBOR); # label.shape = (1, s*h, s*w, 1)

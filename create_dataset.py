@@ -31,7 +31,7 @@ def parse_function(serialized_example):
   scale = tf.random.uniform(minval = 0.5, maxval = 1.75, shape = (), dtype = tf.float32);
   shape = tf.cast([float(shape[0]) * scale, float(shape[1]) * scale], dtype = tf.int32);
   data = tf.image.resize(tf.expand_dims(data, axis = 0), shape, method = tf.image.ResizeMethod.BILINEAR); # data.shape = (1, s*h, s*w, 3)
-  label = tf.image.resize(tf.reshape(label, (1, label.shape[0], label.shape[1], 1)), shape, method = tf.image.ResizeMethod.NEAREST_NEIGHBOR); # label.shape = (1, s*h, s*w, 1)
+  label = tf.image.resize(tf.reshape(label, (1, tf.shape(label)[0], tf.shape(label)[1], 1)), shape, method = tf.image.ResizeMethod.NEAREST_NEIGHBOR); # label.shape = (1, s*h, s*w, 1)
   comp = tf.squeeze(tf.concat([data, label], axis = -1), axis = 0); # comp.shape = (s*h, s*w, 3+1)
   comp = tf.cond(tf.math.greater(tf.random.uniform(shape = ()), 0.5), lambda: comp, lambda: tf.squeeze(tf.image.flip_left_right(tf.expand_dims(comp, axis = 0)), axis = 0)); # comp.shape = (h, w, 3 + 1)
   data = comp[...,:-1]; # data.shape = (h, w, 3)

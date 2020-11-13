@@ -29,6 +29,7 @@ def parse_function(serialized_example):
   label = tf.sparse.to_dense(feature['label'], default_value = 0);
   label = tf.reshape(label, (shape[0], shape[1])); # label.shape = (h, w)
   # 1) random hsv
+  data = tf.expand_dims(data, axis = 0); # data.shape = (1, h, w, 3)
   data = tf.image.random_hue(data, 10 / 180);
   data = tf.image.random_saturation(data, 0, 10);
   data = tf.image.random_brightness(data, 10 / 255);

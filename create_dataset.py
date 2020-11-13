@@ -63,7 +63,7 @@ def parse_function(serialized_example):
   data = tf.image.resize(data, (512, 512), method = tf.image.ResizeMethod.BICUBIC); # data.shape = (1, 512, 512, 3)
   label = tf.image.resize(label, (512, 512), method = tf.image.ResizeMethod.NEAREST_NEIGHBOR); # label.shape = (1, 512, 512, 1)
   # 6) squeeze
-  data = tf.squeeze(data, axis = 0); # data.shape = (512, 512, 3)
+  data = tf.squeeze(data, axis = 0) / 255.; # data.shape = (512, 512, 3)
   label = tf.reshape(label, (tf.shape(label)[1], tf.shape(label)[2])); # label.shape = (512, 512)
   return data, label;
 

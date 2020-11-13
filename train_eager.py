@@ -71,11 +71,11 @@ def main():
         tf.summary.scalar('train accuracy', train_accuracy.result(), step = optimizer.iterations);
         tf.summary.scalar('test loss', test_loss.result(), step = optimizer.iterations);
         tf.summary.scalar('test accuracy', test_accuracy.result(), step = optimizer.iterations);
-        seg = tf.argmax(preds, axis = -1); # cls.shape = (1, 256, 256)
+        seg = tf.argmax(preds[0:1,...], axis = -1); # cls.shape = (1, 256, 256)
         classes, _ = tf.unique(tf.reshape(seg, (-1,))); # cls.shape = (class num)
         palette = tf.random.uniform(maxval = 256, shape = (classes.shape[0], 3), dtype = tf.int32); # palette.shape = (class num, 3)
         colormap = tf.cast(tf.gather_nd(palette, tf.expand_dims(seg, axis = -1)), dtype = tf.float32); # colormap.shape = (1, 255, 255, 3)
-        img = tf.cast(tf.clip_by_value(tf.math.rint(0.2 * colormap + 0.8 * data[...,::-1]), 0, 255), dtype = tf.uint8);
+        img = tf.cast(tf.clip_by_value(tf.math.rint(0.5 * colormap + 0.5 * data[0:1,...,::-1] * 255.), 0, 255), dtype = tf.uint8);
         tf.summary.image('segmentation', img, step = optimizer.iterations);
       print('Step #%d Train Loss: %.6f Train Accuracy: %.6f Test Loss: %.6f Test Accuracy: %.6f' % \
           (optimizer.iterations, train_loss.result(), train_accuracy.result(), test_loss.result(), test_accuracy.result()));

@@ -29,18 +29,9 @@ def parse_function(serialized_example):
   label = tf.sparse.to_dense(feature['label'], default_value = 0);
   label = tf.reshape(label, (shape[0], shape[1])); # label.shape = (h, w)
   # 1) random hsv
-  delta_h = tf.random.uniform(minval = -10, maxval = 10, shape = (), dtype = tf.int32);
-  delta_s = tf.random.uniform(minval = -10, maxval = 10, shape = (), dtype = tf.int32);
-  delta_v = tf.random.uniform(minval = -10, maxval = 10, shape = (), dtype = tf.int32);
-  hsv = tf.image.rgb_to_hsv(tf.expand_dims(data, axis = 0)); # hsv.shape = (1, h, w, 3)
-  h = hsv[...,0:1]; # h.shape = (1, h, w, 1)
-  s = hsv[...,1:2]; # s.shape = (1, h, w, 1)
-  v = hsv[...,2:3]; # v.shape = (1, h, w, 1)
-  h = (h + delta_h) % 180; # h.shape = (1, h, w, 1)
-  s = tf.clip_by_value(s + delta_s, 0, 255); # s.shape = (1, h, w, 1)
-  v = tf.clip_by_value(v + delta_v, 0, 255); # v.shape = (1, h, w, 1)
-  hsv = tf.concat([h,s,v], axis = -1); # hsv.shape = (1, h, w, 3)
-  data = tf.image.hsv_to_rgb(hsv); # data.shape = (1, h, w, 3)
+  data = tf.image.random_hue(data, 10 / 180);
+  data = tf.image.random_saturation(data, 0, 10);
+  data = tf.image.random_brightness(data, 10 / 255);
   # 2) random flip
   comp = tf.concat([data, tf.reshape(label, (1, tf.shape(label)[0], tf.shape(label)[1], 1))], axis = -1); # comp.shape = (1, h, w, 3 + 1)
   comp = tf.cond(tf.math.greater(tf.random.uniform(shape = ()), 0.5), lambda: comp, lambda: tf.image.flip_left_right(comp)); # comp.shape = (1, h, w, 3 + 1)

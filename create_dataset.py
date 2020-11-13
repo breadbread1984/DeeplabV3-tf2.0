@@ -44,7 +44,7 @@ def parse_function(serialized_example):
   data = tf.image.resize(data, shape, method = tf.image.ResizeMethod.BICUBIC); # data.shape = (1, s*h, s*w, 3)
   label = tf.image.resize(label, shape, method = tf.image.ResizeMethod.NEAREST_NEIGHBOR); # label.shape = (1, s*h, s*w, 1)
   # 4) random crop
-  comp = tf.concat([data, albel], axis = -1); # comp.shape = (1, s*h, s*w, 3+1)
+  comp = tf.concat([data, label], axis = -1); # comp.shape = (1, s*h, s*w, 3+1)
   crop_h = tf.math.mimimum(tf.shape(comp)[1], 512);
   crop_w = tf.math.minimum(tf.shape(comp)[2], 512);
   crop_c = tf.shape(comp)[3];

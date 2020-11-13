@@ -2,6 +2,35 @@
 
 import tensorflow as tf;
 
+def Bottleneck(input_shape, filters, stride = 1, dilation = 1):
+
+  # NOTE: either stride or dilation can be over 1
+  inputs = tf.keras.Input(input_shape);
+  residual = inputs;
+  results = tf.keras.layers.Conv2D(filters, (1, 1), padding = 'same', use_bias = False)(inputs);
+  results = tf.keras.layers.BatchNormalization()(results);
+  results = tf.keras.layers.ReLU()(results);
+  results = tf.keras.layers.Conv2D(filters, (3, 3), padding = 'same', strides = (stride, stride), dilation_rate = (dilation, dilation), use_bias = False)(results);
+  results = tf.keras.layers.BatchNormalization()(results);
+  results = tf.keras.layers.ReLU()(results);
+  results = tf.keras.layers.Conv2D(filters * 4, (1, 1), padding = 'same', use_bias = False)(results);
+  results = tf.keras.layers.BatchNormalization()(results);
+  if stride != 1:
+    residual = tf.keras.layers.Conv2D(filters * 4, (1, 1), padding = 'same', strides = (stride, stride), use_bias = False)(residual);
+    residual = tf.keras.layers.BatchNormalization()(residual);
+  results = tf.keras.layers.Add()([results, residual]);
+  results = tf.keras.layers.ReLU()(results);
+  return tf.keras.Model(inputs = inputs, outputs = results);
+
+def ResNet50Atrous():
+
+  inputs = tf.keras.Input((None, None, 3));
+  results = tf.keras.layers.Conv2D(64, (7, 7), strides = (2,2), padding = 'same', use_bias = False)(inputs);
+  results = tf.keras.layers.BatchNormalization()(results);
+  results = tf.keras.layers.ReLU()(results);
+  results = tf.keras.layers.MaxPool2D(pool_size = (3,3), strides = (2,2), padding = 'same')(results);
+  # TODO: https://github.com/YudeWang/deeplabv3plus-pytorch/blob/master/lib/net/resnet_atrous.py
+
 def AtrousSpatialPyramidPooling(channel):
 
   inputs = tf.keras.Input((None, None, channel));

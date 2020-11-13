@@ -6,7 +6,7 @@ import tensorflow as tf;
 from models import DeeplabV3Plus;
 from create_dataset import parse_function;
 
-batch_size = 8;
+batch_size = 4;
 
 def main():
 

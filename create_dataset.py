@@ -40,7 +40,7 @@ def parse_function(serialized_example):
   label = comp[...,-1:]; # label.shape = (1, h, w, 1)
   # 3) random scale
   scale = tf.random.uniform(minval = 0.5, maxval = 2.0, shape = (), dtype = tf.float32);
-  shape = tf.cast([float(data.shape[1]) * scale, float(data.shape[2]) * scale], dtype = tf.int32);
+  shape = tf.cast([float(tf.shape(data)[1]) * scale, float(tf.shape(data)[2]) * scale], dtype = tf.int32);
   data = tf.image.resize(data, shape, method = tf.image.ResizeMethod.BICUBIC); # data.shape = (1, s*h, s*w, 3)
   label = tf.image.resize(label, shape, method = tf.image.ResizeMethod.NEAREST_NEIGHBOR); # label.shape = (1, s*h, s*w, 1)
   # 4) random crop

@@ -14,7 +14,7 @@ def main():
   strategy = tf.distribute.MirroredStrategy();
   # variables for replica
   with strategy.scope():
-    deeplabv3plus = DeeplabV3Plus(3, 80 + 1);
+    deeplabv3plus = DeeplabV3Plus(80 + 1);
     loss_object = tf.keras.losses.SparseCategoricalCrossentropy(reduction = tf.keras.losses.Reduction.NONE);
     def compute_loss(labels, predictions):
       per_example_loss = loss_object(labels, predictions);

@@ -18,7 +18,7 @@ def main():
   trainset = tf.data.TFRecordDataset(trainset_filenames).map(parse_function).shuffle(batch_size).batch(batch_size).prefetch(tf.data.experimental.AUTOTUNE);
   testset = tf.data.TFRecordDataset(testset_filenames).map(parse_function).shuffle(batch_size).batch(batch_size).prefetch(tf.data.experimental.AUTOTUNE);
   with strategy.scope():
-    deeplabv3plus = DeeplabV3Plus(3, 80 + 1);
+    deeplabv3plus = DeeplabV3Plus(80 + 1);
   deeplabv3plus.compile(optimizer = 'adam', loss = 'sparse_categorical_crossentropy', metrics = ['sparse_categorical_accuracy']);
   deeplabv3plus.fit(trainset, epochs = 100, validation_data = testset);
   deeplabv3plus.save('deeplabv3plus.h5');

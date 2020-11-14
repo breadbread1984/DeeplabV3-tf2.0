@@ -15,7 +15,7 @@ def Bottleneck(input_shape, filters, stride = 1, dilation = 1):
   results = tf.keras.layers.ReLU()(results);
   results = tf.keras.layers.Conv2D(filters * 4, (1, 1), padding = 'same', use_bias = False)(results);
   results = tf.keras.layers.BatchNormalization()(results);
-  if stride != 1:
+  if stride != 1 or inputs.shape[-1] != results.shape[-1]:
     residual = tf.keras.layers.Conv2D(filters * 4, (1, 1), padding = 'same', strides = (stride, stride), use_bias = False)(residual);
     residual = tf.keras.layers.BatchNormalization()(residual);
   results = tf.keras.layers.Add()([results, residual]);
@@ -36,25 +36,25 @@ def ResNetAtrous(layer_nums = [3, 4, 6, 3], dilations = [1, 2, 1]):
     assert type(dilations) is list or dilations is None;
     results = inputs;
     for i in range(layer_num):
-      results = Bottleneck(inputs.shape[1:], filters, stride = stride if i == 0 else 1, dilation = dilations[i] if dilations is not None else 1)(results);
+      results = Bottleneck(results.shape[1:], filters, stride = stride if i == 0 else 1, dilation = dilations[i] if dilations is not None else 1)(results);
     return results;
-  results = make_layer(results, 64, layer_nums[0]);
-  results = make_layer(results, 128, layer_nums[1], stride = stride[0]);
-  results = make_layer(results, 256, layer_nums[2], stride = stride[1], dilations = [1] * layer_nums[2]);
-  results = make_layer(results, 512, layer_nums[3], stride = stride[2], dilations = dilations);
-  return tf.keras.Model(inputs = inputs, outputs = results);
+  outputs1 = make_layer(results, 64, layer_nums[0]);
+  results = make_layer(outputs1, 128, layer_nums[1], stride = strides[0]);
+  results = make_layer(results, 256, layer_nums[2], stride = strides[1], dilations = [1] * layer_nums[2]);
+  outputs2 = make_layer(results, 512, layer_nums[3], stride = strides[2], dilations = dilations);
+  return tf.keras.Model(inputs = inputs, outputs = (outputs1, outputs2));
 
 def ResNet50Atrous():
 
   inputs = tf.keras.Input((None, None, 3));
   results = ResNetAtrous([3, 4, 6, 3], [1, 2, 1])(inputs);
-  return tf.keras.Model(inputs = inputs, outputs = results);
+  return tf.keras.Model(inputs = inputs, outputs = results, name = 'resnet50');
 
 def ResNet101Atrous():
 
   inputs = tf.keras.Input((None, None, 3));
   results = ResNetAtrous([3, 4, 23, 3], [2, 2, 2])(inputs);
-  return tf.keras.Model(inputs = inputs, outputs = results);
+  return tf.keras.Model(inputs = inputs, outputs = results, name = 'resnet101');
 
 def AtrousSpatialPyramidPooling(channel):
 
@@ -91,17 +91,11 @@ def AtrousSpatialPyramidPooling(channel):
   results = tf.keras.layers.ReLU()(results);
   return tf.keras.Model(inputs = inputs, outputs = results);
 
-def ResNet50(input_shape):
-
-  inputs = tf.keras.Input(input_shape);
-  resnet50 = tf.keras.applications.ResNet50(input_tensor = inputs, weights = 'imagenet', include_top = False);
-  return tf.keras.Model(inputs = inputs, outputs = (resnet50.get_layer('conv4_block6_2_relu').output, resnet50.get_layer('conv2_block3_2_relu').output), name = 'resnet50');
-
-def DeeplabV3Plus(channel = 3, nclasses = None):
+def DeeplabV3Plus(nclasses = None):
 
   assert type(nclasses) is int;
-  inputs = tf.keras.Input((None, None, channel));
-  low, high = ResNet50(inputs.shape[1:])(inputs);
+  inputs = tf.keras.Input((None, None, 3));
+  high, low = ResNet50Atrous()(inputs);
   # b.shape = (batch, height // 4, width // 4, 48)
   results = tf.keras.layers.Conv2D(48, kernel_size = (1,1), padding = 'same', kernel_initializer = tf.keras.initializers.he_normal(), use_bias = False)(high);
   results = tf.keras.layers.BatchNormalization()(results);
@@ -125,13 +119,7 @@ def DeeplabV3Plus(channel = 3, nclasses = None):
 if __name__ == "__main__":
 
   assert True == tf.executing_eagerly();
-  resnet50 = ResNet50Atrous();
-  import numpy as np;
-  inputs = np.random.normal(size = (1,224,224,3));
-  outputs = resnet50(inputs);
-  resnet50.save('resnet50.h5');
-  exit(1)
-  deeplabv3 = DeeplabV3Plus(3,66);
+  deeplabv3 = DeeplabV3Plus(66);
   import numpy as np;
   results = deeplabv3(tf.constant(np.random.normal(size = (8, 224, 224, 3)), dtype = tf.float32));
   deeplabv3.save('deeplabv3.h5');
@@ -139,10 +127,3 @@ if __name__ == "__main__":
   # how to get the pretrained resnet50's weight
   deeplabv3.get_layer('resnet50').save_weights('resnet50.h5');
   deeplabv3.get_layer('resnet50').load_weights('resnet50.h5');
-  # how to get the prototype vector
-  inputs = tf.keras.Input((None, None, 3));
-  model = DeeplabV3Plus(3,81);
-  extractor = tf.keras.Model(inputs = model.input, outputs = model.get_layer('prototype').output);
-  results = extractor(tf.constant(np.random.normal(size = (8, 224, 224, 3)), dtype = tf.float32));
-  # how to get W of the last 1x1 convolution layer
-  deeplabv3.get_layer('full_conv').save_weights('full_conv.h5');

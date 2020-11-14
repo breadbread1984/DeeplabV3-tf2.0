@@ -22,14 +22,39 @@ def Bottleneck(input_shape, filters, stride = 1, dilation = 1):
   results = tf.keras.layers.ReLU()(results);
   return tf.keras.Model(inputs = inputs, outputs = results);
 
-def ResNet50Atrous():
+def ResNetAtrous(layer_nums = [3, 4, 6, 3], dilations = [1, 2, 1]):
 
+  strides = [2, 2, 1];
+  assert layer_nums[-1] == len(dilations);
+  assert len(layer_nums) == 1 + len(strides);
   inputs = tf.keras.Input((None, None, 3));
   results = tf.keras.layers.Conv2D(64, (7, 7), strides = (2,2), padding = 'same', use_bias = False)(inputs);
   results = tf.keras.layers.BatchNormalization()(results);
   results = tf.keras.layers.ReLU()(results);
   results = tf.keras.layers.MaxPool2D(pool_size = (3,3), strides = (2,2), padding = 'same')(results);
-  # TODO: https://github.com/YudeWang/deeplabv3plus-pytorch/blob/master/lib/net/resnet_atrous.py
+  def make_layer(inputs, filters, layer_num, stride = 1, dilations = None):
+    assert type(dilations) is list or dilations is None;
+    results = inputs;
+    for i in range(layer_num):
+      results = Bottleneck(inputs.shape[1:], filters, stride = stride if i == 0 else 1, dilation = dilations[i] if dilations is not None else 1)(results);
+    return results;
+  results = make_layer(results, 64, layer_nums[0]);
+  results = make_layer(results, 128, layer_nums[1], stride = stride[0]);
+  results = make_layer(results, 256, layer_nums[2], stride = stride[1], dilations = [1] * layer_nums[2]);
+  results = make_layer(results, 512, layer_nums[3], stride = stride[2], dilations = dilations);
+  return tf.keras.Model(inputs = inputs, outputs = results);
+
+def ResNet50Atrous():
+
+  inputs = tf.keras.Input((None, None, 3));
+  results = ResNetAtrous([3, 4, 6, 3], [1, 2, 1])(inputs);
+  return tf.keras.Model(inputs = inputs, outputs = results);
+
+def ResNet101Atrous():
+
+  inputs = tf.keras.Input((None, None, 3));
+  results = ResNetAtrous([3, 4, 23, 3], [2, 2, 2])(inputs);
+  return tf.keras.Model(inputs = inputs, outputs = results);
 
 def AtrousSpatialPyramidPooling(channel):
 
@@ -100,6 +125,12 @@ def DeeplabV3Plus(channel = 3, nclasses = None):
 if __name__ == "__main__":
 
   assert True == tf.executing_eagerly();
+  resnet50 = ResNet50Atrous();
+  import numpy as np;
+  inputs = np.random.normal(size = (1,224,224,3));
+  outputs = resnet50(inputs);
+  resnet50.save('resnet50.h5');
+  exit(1)
   deeplabv3 = DeeplabV3Plus(3,66);
   import numpy as np;
   results = deeplabv3(tf.constant(np.random.normal(size = (8, 224, 224, 3)), dtype = tf.float32));

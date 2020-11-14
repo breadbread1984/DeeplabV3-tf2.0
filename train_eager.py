@@ -32,7 +32,9 @@ def main():
   while True:
     data, labels = next(trainset_iter);
     err_labels = tf.boolean_mask(labels, tf.math.logical_or(tf.math.less(labels, 0), tf.math.greater(labels, 80)));
-    print(err_labels);
+    if err_labels.shape[0] != 0:
+      print('encounter invalid labels', err_labels);
+      continue;
     with tf.GradientTape() as tape:
       if tf.math.reduce_any(tf.math.logical_or(tf.math.is_nan(data), tf.math.is_inf(data))) == True:
         print('detected nan in data, skip current iterations');
@@ -61,7 +63,9 @@ def main():
       for i in range(10):
         data, labels = next(testset_iter);
         err_labels = tf.boolean_mask(labels, tf.math.logical_or(tf.math.less(labels, 0), tf.math.greater(labels, 80)));
-        print(err_labels);
+        if err_labels.shape[0] != 0:
+          print('encounter invalid labels', err_labels);
+          continue;
         if tf.math.reduce_any(tf.math.logical_or(tf.math.is_nan(data), tf.math.is_inf(data))) == True:
           print('detected nan in data, skip current iterations');
           continue;

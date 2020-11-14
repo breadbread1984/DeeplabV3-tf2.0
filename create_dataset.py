@@ -64,7 +64,7 @@ def parse_function(serialized_example):
   data = tf.squeeze(data, axis = 0) / 255.; # data.shape = (512, 512, 3)
   label = tf.reshape(label, (tf.shape(label)[1], tf.shape(label)[2])); # label.shape = (512, 512)
   # 7) label label
-  label = tf.squeeze(tf.gather(tf.expand_dims(tf.cast(label, dtype = tf.int32), axis = -1), label_map), axis = -1); # label.shape = (512, 512)
+  label = tf.gather(label_map, tf.cast(label, dtype = tf.int32)); # label.shape = (512, 512)
   return data, label;
 
 def create_dataset(image_dir, label_dir, trainset = True):

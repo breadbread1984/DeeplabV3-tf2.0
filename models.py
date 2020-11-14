@@ -46,12 +46,14 @@ def ResNetAtrous(layer_nums = [3, 4, 6, 3], dilations = [1, 2, 1]):
 
 def ResNet50Atrous():
 
+  # NOTE: (3 + 4 + 6 + 3) * 3 + 2 = 50
   inputs = tf.keras.Input((None, None, 3));
   results = ResNetAtrous([3, 4, 6, 3], [1, 2, 1])(inputs);
   return tf.keras.Model(inputs = inputs, outputs = results, name = 'resnet50');
 
 def ResNet101Atrous():
 
+  # NOTE: (3 + 4 + 23 + 3) * 3 + 2 = 101
   inputs = tf.keras.Input((None, None, 3));
   results = ResNetAtrous([3, 4, 23, 3], [2, 2, 2])(inputs);
   return tf.keras.Model(inputs = inputs, outputs = results, name = 'resnet101');

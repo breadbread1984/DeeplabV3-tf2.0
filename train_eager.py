@@ -58,6 +58,8 @@ def main():
       # evaluate
       for i in range(10):
         data, labels = next(testset_iter);
+        err_labels = tf.boolean_mask(labels, tf.math.logical_or(tf.math.less(labels, 0), tf.math.greater(labels, 80)));
+        print(err_labels);
         if tf.math.reduce_any(tf.math.logical_or(tf.math.is_nan(data), tf.math.is_inf(data))) == True:
           print('detected nan in data, skip current iterations');
           continue;

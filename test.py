@@ -24,7 +24,7 @@ def main(img_path):
   colormap = tf.cast(tf.gather_nd(palette, tf.expand_dims(seg, axis = -1)), dtype = tf.float32); # colormap.shape = (1, 255, 255, 3)
   seg_img = tf.cast(tf.clip_by_value(tf.math.rint(0.5 * colormap + 0.5 * data[0:1,...] * 255.), 0, 255), dtype = tf.uint8);
   cv2.imshow('origin', img);
-  cv2.imshow('segmentation', seg_img.numpy());
+  cv2.imshow('segmentation', seg_img[0].numpy());
   cv2.waitKey();
 
 if __name__ == "__main__":

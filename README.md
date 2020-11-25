@@ -31,4 +31,25 @@ or
 python3 train_keras.py
 ```
 
+## save model
+
+save model with command
+
+```python
+python3 save_model.py
+```
+
+## experimental results
+
+here are some results of my model which can be downloaded [here](https://pan.baidu.com/s/1o4HPPr07sLdjiFaMddAD9A), pass code is **core**. 
+
+<p align="center">
+  <table>
+    <caption>Loss</caption>
+    <tr><td><img src="imgs/loss.png" alt="train loss" width="800" /></td></tr>
+    <tr><td><img src="imgs/accuracy.png" alt="train accuracy" width="800"></td></tr>
+  </table>
+</p>
+
+## how to predict with the trained model
 

@@ -15,6 +15,7 @@ def main():
   if False == exists('models'): mkdir('models');
   deeplabv3plus.save(join('models','deeplabv3plus.h5'));
   deeplabv3plus.save_weights(join('models', 'deeplabv3plus_weights.h5'));
+  deeplabv3plus.get_layer('resnet50').save_weights(join('models', 'resnet50.h5'));
 
 if __name__ == "__main__":
 

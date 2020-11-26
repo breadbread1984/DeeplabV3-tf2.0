@@ -27,7 +27,7 @@ def main(img_path):
   classes, _ = tf.unique(tf.reshape(seg, (-1,))); # cls.shape = (class num)
   palette = tf.random.uniform(maxval = 256, shape = (classes.shape[0], 3), dtype = tf.int32); # palette.shape = (class num, 3)
   colormap = tf.cast(tf.gather_nd(palette, tf.expand_dims(seg, axis = -1)), dtype = tf.float32); # colormap.shape = (1, 255, 255, 3)
-  seg_img = tf.cast(tf.clip_by_value(tf.math.rint(0.5 * colormap + 0.5 * data[0:1,...] * 255.), 0, 255), dtype = tf.uint8);
+  seg_img = tf.cast(colormap, dtype = tf.uint8);
   cv2.imshow('origin', img);
   cv2.imshow('segmentation', seg_img[0].numpy());
   cv2.waitKey();

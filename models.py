@@ -39,10 +39,10 @@ def ResNetAtrous(layer_nums = [3, 4, 6, 3], dilations = [1, 2, 1]):
       results = Bottleneck(results.shape[1:], filters, stride = stride if i == 0 else 1, dilation = dilations[i] if dilations is not None else 1)(results);
     return results;
   outputs1 = make_block(results, 64, layer_nums[0]);
-  results = make_block(outputs1, 128, layer_nums[1], stride = strides[0]);
-  results = make_block(results, 256, layer_nums[2], stride = strides[1], dilations = [1] * layer_nums[2]);
-  outputs2 = make_block(results, 512, layer_nums[3], stride = strides[2], dilations = dilations);
-  return tf.keras.Model(inputs = inputs, outputs = (outputs1, outputs2));
+  outputs2 = make_block(outputs1, 128, layer_nums[1], stride = strides[0]);
+  outputs3 = make_block(outputs2, 256, layer_nums[2], stride = strides[1], dilations = [1] * layer_nums[2]);
+  outputs4 = make_block(outputs3, 512, layer_nums[3], stride = strides[2], dilations = dilations);
+  return tf.keras.Model(inputs = inputs, outputs = (outputs1, outputs2, outputs3, outputs4));
 
 def ResNet50Atrous():
 
@@ -97,7 +97,7 @@ def DeeplabV3Plus(nclasses = None):
 
   assert type(nclasses) is int;
   inputs = tf.keras.Input((None, None, 3));
-  high, low = ResNet50Atrous()(inputs);
+  high, _, _, low = ResNet50Atrous()(inputs);
   # b.shape = (batch, height // 4, width // 4, 48)
   results = tf.keras.layers.Conv2D(48, kernel_size = (1,1), padding = 'same', kernel_initializer = tf.keras.initializers.he_normal(), use_bias = False)(high);
   results = tf.keras.layers.BatchNormalization()(results);

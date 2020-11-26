@@ -41,7 +41,7 @@ python3 save_model.py
 
 ## experimental results
 
-here are some results of my model which can be downloaded [here](https://pan.baidu.com/s/1qa7hHPr77syvP2wdbOMdrQ), pass code is **nh9u**. note that "bad marshal data (unknown type code)" error occurs when you load the model file deeplabv3plus.h5 with python3.7 or above version. the model is saved with python 3.6.9. you can load weights file deeplabv3plus_weights.h5 with any version of python.
+here are some results of my model which can be downloaded [here](https://pan.baidu.com/s/1qa7hHPr77syvP2wdbOMdrQ), pass code is **nh9u**. note that "bad marshal data (unknown type code)" error occurs when you load the model file **deeplabv3plus.h5** with python3.7 or above version. the model is saved with python 3.6.9. you can load weights file **deeplabv3plus_weights.h5** with any version of python.
 
 <p align="center">
   <table>
@@ -64,5 +64,14 @@ here are some results of my model which can be downloaded [here](https://pan.bai
   </table>
 </p>
 
-## how to predict with the trained model
+the result is not perfect. I just use the pretrained Resnet for other purpose. if you want to use deeplabv3+ seriously. you are welcome to tune the model base on this project.
+
+## how to predict with the pretrained model
+
+segment your image with the following command
+
+```python
+python3 test.py </path/to/image>
+```
+
 

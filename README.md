@@ -55,11 +55,11 @@ here are some results of my model which can be downloaded [here](https://pan.bai
     <caption>Segmentation results</caption>
     <tr>
       <td><img src="imgs/img1.png" width="400" /></td>
-      <td><img src="imgs/res1.png" width="400" /></td>
+      <td><img src="imgs/seg1.png" width="400" /></td>
     </tr>
     <tr>
       <td><img src="imgs/img2.png" width="400" /></td>
-      <td><img src="imgs/res2.png" width="400" /></td>
+      <td><img src="imgs/seg2.png" width="400" /></td>
     </tr>
   </table>
 </p>

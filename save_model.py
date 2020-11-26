@@ -14,6 +14,7 @@ def main():
   checkpoint.restore(tf.train.latest_checkpoint('checkpoints'));
   if False == exists('models'): mkdir('models');
   deeplabv3plus.save(join('models','deeplabv3plus.h5'));
+  deeplabv3plus.save_weights(join('models', 'deeplabv3plus_weights.h5'));
 
 if __name__ == "__main__":
 

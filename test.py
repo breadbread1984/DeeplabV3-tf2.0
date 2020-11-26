@@ -16,7 +16,7 @@ def main(img_path):
     print('no pretrained model found!');
     exit(1);
   data = tf.expand_dims(img.astype('float32') / 255., axis = 0); # data.shape = (1, h, w, 3)
-  deeplabv3plus = tf.keras.models.load_model(join('models', 'deeplabv3plus.h5'));
+  deeplabv3plus = tf.keras.models.load_model(join('models', 'deeplabv3plus.h5'), custom_objects = {'tf': tf});
   preds = deeplabv3plus(data); # preds.shape = (1, h, w, 1 + 80)
   seg = tf.argmax(preds[0:1,...], axis = -1); # cls.shape = (1, 256, 256)
   classes, _ = tf.unique(tf.reshape(seg, (-1,))); # cls.shape = (class num)

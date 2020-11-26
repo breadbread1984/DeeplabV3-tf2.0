@@ -41,13 +41,26 @@ python3 save_model.py
 
 ## experimental results
 
-here are some results of my model which can be downloaded [here](https://pan.baidu.com/s/1qa7hHPr77syvP2wdbOMdrQ), pass code is **nh9u**. note that "bad marshal data (unknown type code)" error occurs when you load the h5 model with python3.7 or above version. the model is saved with python 3.6.9.
+here are some results of my model which can be downloaded [here](https://pan.baidu.com/s/1qa7hHPr77syvP2wdbOMdrQ), pass code is **nh9u**. note that "bad marshal data (unknown type code)" error occurs when you load the model file deeplabv3plus.h5 with python3.7 or above version. the model is saved with python 3.6.9. you can load weights file deeplabv3plus_weights.h5 with any version of python.
 
 <p align="center">
   <table>
     <caption>Loss</caption>
     <tr><td><img src="imgs/loss.png" alt="train loss" width="800" /></td></tr>
     <tr><td><img src="imgs/accuracy.png" alt="train accuracy" width="800"></td></tr>
+  </table>
+</p>
+<p align="center">
+  <table>
+    <caption>Segmentation results</caption>
+    <tr>
+      <td><img src="imgs/img1.png" width="400" /></td>
+      <td><img src="imgs/res1.png" width="400" /></td>
+    </tr>
+    <tr>
+      <td><img src="imgs/img2.png" width="400" /></td>
+      <td><img src="imgs/res2.png" width="400" /></td>
+    </tr>
   </table>
 </p>
 

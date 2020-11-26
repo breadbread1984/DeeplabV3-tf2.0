@@ -24,7 +24,7 @@ def Bottleneck(input_shape, filters, stride = 1, dilation = 1):
 
 def ResNetAtrous(layer_nums = [3, 4, 6, 3], dilations = [1, 2, 1]):
 
-  strides = [2, 2, 1];
+  strides = [2, 1, 1];
   assert layer_nums[-1] == len(dilations);
   assert len(layer_nums) == 1 + len(strides);
   inputs = tf.keras.Input((None, None, 3));
@@ -32,16 +32,16 @@ def ResNetAtrous(layer_nums = [3, 4, 6, 3], dilations = [1, 2, 1]):
   results = tf.keras.layers.BatchNormalization()(results);
   results = tf.keras.layers.ReLU()(results);
   results = tf.keras.layers.MaxPool2D(pool_size = (3,3), strides = (2,2), padding = 'same')(results);
-  def make_layer(inputs, filters, layer_num, stride = 1, dilations = None):
+  def make_block(inputs, filters, layer_num, stride = 1, dilations = None):
     assert type(dilations) is list or dilations is None;
     results = inputs;
     for i in range(layer_num):
       results = Bottleneck(results.shape[1:], filters, stride = stride if i == 0 else 1, dilation = dilations[i] if dilations is not None else 1)(results);
     return results;
-  outputs1 = make_layer(results, 64, layer_nums[0]);
-  results = make_layer(outputs1, 128, layer_nums[1], stride = strides[0]);
-  results = make_layer(results, 256, layer_nums[2], stride = strides[1], dilations = [1] * layer_nums[2]);
-  outputs2 = make_layer(results, 512, layer_nums[3], stride = strides[2], dilations = dilations);
+  outputs1 = make_block(results, 64, layer_nums[0]);
+  results = make_block(outputs1, 128, layer_nums[1], stride = strides[0]);
+  results = make_block(results, 256, layer_nums[2], stride = strides[1], dilations = [1] * layer_nums[2]);
+  outputs2 = make_block(results, 512, layer_nums[3], stride = strides[2], dilations = dilations);
   return tf.keras.Model(inputs = inputs, outputs = (outputs1, outputs2));
 
 def ResNet50Atrous():

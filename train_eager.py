@@ -11,7 +11,7 @@ batch_size = 4;
 def main():
 
   deeplabv3plus = DeeplabV3Plus(80 + 1);
-  optimizer = tf.keras.optimizers.Adam(tf.keras.optimizers.schedules.ExponentialDecay(1e-3, decay_steps = 110000, decay_rate = 0.7));
+  optimizer = tf.keras.optimizers.Adam(tf.keras.optimizers.schedules.ExponentialDecay(1e-3, decay_steps = 110000, decay_rate = 0.9));
   checkpoint = tf.train.Checkpoint(model = deeplabv3plus, optimizer = optimizer);
   train_loss = tf.keras.metrics.Mean(name = 'train loss', dtype = tf.float32);
   train_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name = 'train accuracy');

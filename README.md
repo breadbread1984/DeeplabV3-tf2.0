@@ -41,7 +41,7 @@ python3 save_model.py
 
 ## experimental results
 
-here are some results of my model which can be downloaded [here](https://pan.baidu.com/s/1o4HPPr07sLdjiFaMddAD9A), pass code is **core**. 
+here are some results of my model which can be downloaded [here](https://pan.baidu.com/s/1qa7hHPr77syvP2wdbOMdrQ), pass code is **nh9u**. note that "bad marshal data (unknown type code)" error occurs when you load the h5 model with python3.7 or above version. the model is saved with python 3.6.9.
 
 <p align="center">
   <table>

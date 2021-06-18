@@ -20,7 +20,11 @@ def main():
   with strategy.scope():
     deeplabv3plus = DeeplabV3Plus(80 + 1);
   deeplabv3plus.compile(optimizer = 'adam', loss = 'sparse_categorical_crossentropy', metrics = ['sparse_categorical_accuracy']);
-  deeplabv3plus.fit(trainset, epochs = 100, validation_data = testset);
+  callbacks = [
+    tf.keras.callbacks.TensorBoard(log_dir = './checkpoints'),
+    tf.keras.callbacks.ModelCheckpoint(filepath = './checkpoints/ckpt', save_freq = 1000),
+  ];
+  deeplabv3plus.fit(trainset, epochs = 100, validation_data = testset, callbacks = callbacks);
   deeplabv3plus.save('deeplabv3plus.h5');
 
 if __name__ == "__main__":
